@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseUrl = 'https://xjimqtbzbxqmkgavizxy.supabase.co' // Из настроек проекта
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqaW1xdGJ6YnhxbWtnYXZpenh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1ODMzNDQsImV4cCI6MjA3MDE1OTM0NH0.QeZIjiYR1HcUzvAqUOnjXbFCMyxY9P6SbzQKWQm-ueI'    // Из настроек проекта
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey)
+</script>
+
+    <meta charset="UTF-8">
+    <title>Создание персонажа</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .character-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .character-preview {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .back-btn {
+            background-color: #f44336;
+            margin-top: 10px;
+        }
+        .back-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="character-form">
+        <h1>Создание персонажа</h1>
+        
+        <div class="form-group">
+            <label for="char-name">Имя персонажа:</label>
+            <input type="text" id="char-name" placeholder="Арагорн, Леголас и т.д.">
+        </div>
+        
+        <div class="form-group">
+            <label for="char-race">Раса:</label>
+            <select id="char-race">
+                <option value="">Выберите расу</option>
+                <option value="human">Человек</option>
+                <option value="elf">Эльф</option>
+                <option value="dwarf">Дварф</option>
+                <option value="halfling">Хоббит</option>
+                <option value="dragonborn">Драконорождённый</option>
+                <option value="tiefling">Тифлинг</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="char-class">Класс:</label>
+            <select id="char-class">
+                <option value="">Выберите класс</option>
+                <option value="warrior">Воин</option>
+                <option value="wizard">Волшебник</option>
+                <option value="rogue">Плут</option>
+                <option value="cleric">Жрец</option>
+                <option value="ranger">Следопыт</option>
+                <option value="bard">Бард</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="char-background">Предыстория персонажа:</label>
+            <textarea id="char-background" placeholder="Опишите прошлое вашего персонажа..."></textarea>
+        </div>
+        
+        <button onclick="generateCharacter()">Сгенерировать описание</button>
+        <button onclick="saveCharacter()">Сохранить персонажа</button>
+        <button class="back-btn" onclick="window.location.href='index.html'">Назад в главное меню</button>
+        
+        <div class="character-preview" id="char-preview">
+            <h3>Предпросмотр персонажа:</h3>
+            <div id="preview-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Генерация описания персонажа с помощью AI
+        async function generateCharacter() {
+            const name = document.getElementById('char-name').value;
+            const race = document.getElementById('char-race').value;
+            const charClass = document.getElementById('char-class').value;
+            
+            if (!name || !race || !charClass) {
+                alert("Заполните имя, расу и класс персонажа!");
+                return;
+            }
+            
+            const prompt = `Создай подробное описание персонажа D&D:
+Имя: ${name}
+Раса: ${race}
+Класс: ${charClass}
+
+Включи:
+1. Внешность (2-3 предложения)
+2. Характер (2-3 предложения)
+3. Краткую предысторию (3-5 предложений)`;
+            
+            document.getElementById('preview-content').innerHTML = "Генерируем описание...";
+            
+            // Здесь должен быть ваш запрос к AI
+            // Примерно так (замените на ваш реальный вызов):
+            try {
+                const response = await fetch('/generate-character', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+                
+                const data = await response.json();
+                const description = data.choices[0].message.content;
+                
+                document.getElementById('char-background').value = description;
+                document.getElementById('preview-content').innerHTML = 
+                    `<p><strong>${name}</strong></p>
+                     <p><strong>Раса:</strong> ${race}</p>
+                     <p><strong>Класс:</strong> ${charClass}</p>
+                     <p>${description.replace(/\n/g, '<br>')}</p>`;
+            } catch (error) {
+                console.error("Ошибка генерации:", error);
+                alert("Ошибка при генерации персонажа");
+            }
+        }
+        
+        // Сохранение персонажа
+         async function saveCharacter() {
+            const character = {
+                name: document.getElementById('char-name').value,
+                race: document.getElementById('char-race').value,
+                class: document.getElementById('char-class').value,
+                background: document.getElementById('char-background').value
+            };
+            
+            if (!character.name || !character.race || !character.class) {
+                alert("Заполните обязательные поля: имя, раса и класс!");
+                return;
+            }
+
+            // Сохранение в Supabase
+            const { error } = await supabase
+                .from('characters')
+                .insert(character);
+
+            if (error) {
+                alert("Ошибка сохранения: " + error.message);
+                console.error(error);
+            } else {
+                alert("Персонаж успешно сохранён в базе данных!");
+                window.location.href = "index.html";
+            }
+        }
+        
+    </script>
+</body>
+</html>
