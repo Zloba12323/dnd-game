@@ -153,7 +153,7 @@
     // Инициализация Supabase
     const supabaseUrl = 'https://xjimqtbzbxqmkgavizxy.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqaW1xdGJ6YnhxbWtnYXZpenh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1ODMzNDQsImV4cCI6MjA3MDE1OTM0NH0.QeZIjiYR1HcUzvAqUOnjXbFCMyxY9P6SbzQKWQm-ueI';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     // Инициализация Socket.IO
     const socket = io("http://localhost:10000", {
@@ -168,10 +168,10 @@
     // Загрузка данных при старте
     document.addEventListener('DOMContentLoaded', async () => {
       // Проверяем авторизацию
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await sb.auth.getUser();
       if (!user) {
         alert('Пожалуйста, войдите в систему');
-        window.location.href = 'index.html';
+        window.location.href = '/gamemenu';
         return;
       }
 
@@ -264,7 +264,7 @@
 
     function leaveRoom() {
       socket.emit('leave', { roomId: currentRoomId });
-      window.location.href = 'sessions-list.html';
+      window.location.href = '/sessions-list';
     }
 
     function addMessage(sender, content) {

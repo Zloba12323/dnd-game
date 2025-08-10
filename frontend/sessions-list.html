@@ -43,7 +43,7 @@
 <body>
   <div id="sessions-container" style="max-width: 600px; margin: 30px auto;">
     <h2>Мои сессии</h2>
-    <button class="new-session-btn" onclick="window.location.href='create-session.html'">Создать новую сессию</button>
+    <button class="new-session-btn" onclick="window.location.href='/create-session'">Создать новую сессию</button>
     <!-- Сюда будут добавляться сессии -->
   </div>
 
@@ -53,24 +53,24 @@
     // Инициализация Supabase
     const supabaseUrl = 'https://xjimqtbzbxqmkgavizxy.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqaW1xdGJ6YnhxbWtnYXZpenh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1ODMzNDQsImV4cCI6MjA3MDE1OTM0NH0.QeZIjiYR1HcUzvAqUOnjXbFCMyxY9P6SbzQKWQm-ueI';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     document.addEventListener('DOMContentLoaded', async () => {
       const container = document.getElementById('sessions-container');
       
       try {
         // Получаем текущего пользователя
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await sb.auth.getUser();
         
         if (userError || !user) {
           console.error('Ошибка получения пользователя:', userError);
           alert('Пожалуйста, войдите в систему');
-          window.location.href = 'index.html';
+          window.location.href = '/gamemenu';
           return;
         }
 
         // Загружаем сессии текущего пользователя из Supabase
-        const { data: sessions, error } = await supabase
+        const { data: sessions, error } = await sb
           .from('sessions')
           .select('*')
           .eq('created_by', user.id)
@@ -80,7 +80,7 @@
           throw error;
         }
 
-        if (sessions.length === 0) {
+        if (!sessions || sessions.length === 0) {
           container.innerHTML += '<p>У вас пока нет созданных сессий. Создайте первую!</p>';
           return;
         }
@@ -105,7 +105,7 @@
     });
 
     function startSession(id) {
-      window.location.href = `character-select.html?session=${id}`;
+      window.location.href = `/character-select?session=${id}`;
     }
 
     function getGenreName(genreKey) {
