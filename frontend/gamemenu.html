@@ -133,6 +133,7 @@
     <button class="menu-btn" onclick="navigate('sessions-list')">📜 Мои текущие сессии</button>
     <button class="menu-btn" onclick="navigate('create-character')">🧙 Создать персонажа</button>
     <button class="menu-btn" onclick="navigate('character-select')">👥 Выбрать персонажа</button>
+    <button class="menu-btn" id="guest-login-btn" onclick="loginGuest()" style="display:none">🚪 Гостевой вход</button>
     
     <div class="user-info" id="user-info">
       <!-- Сюда будет вставляться информация о пользователе -->
@@ -178,17 +179,20 @@
 
     function updateAuthUI(user) {
       const userInfoDiv = document.getElementById('user-info');
+      const guestBtn = document.getElementById('guest-login-btn');
       if (user) {
         userInfoDiv.innerHTML = `
-          <p>Вы вошли как <strong>${user.email || 'Пользователь'}</strong></p>
+          <p>Вы вошли как <strong>${user.email || (user.is_anonymous ? 'Гость' : 'Пользователь')}</strong></p>
           <button class="auth-btn" onclick="logout()">Выйти</button>
         `;
+        if (guestBtn) guestBtn.style.display = 'none';
       } else {
         userInfoDiv.innerHTML = `
-          <p>Для сохранения прогресса:</p>
+          <p>Войти:</p>
+          <button class="auth-btn" onclick="loginGuest()">Гостевой вход</button>
           <button class="auth-btn" onclick="login('google')">Войти через Google</button>
-          <button class="auth-btn" onclick="login('discord')">Войти через Discord</button>
         `;
+        if (guestBtn) guestBtn.style.display = 'block';
       }
     }
 
@@ -202,6 +206,16 @@
       } catch (error) {
         console.error('Login error:', error);
         alert('Ошибка входа: ' + error.message);
+      }
+    }
+
+    async function loginGuest() {
+      try {
+        const { data, error } = await sb.auth.signInAnonymously();
+        if (error) throw error;
+      } catch (error) {
+        console.error('Guest login error:', error);
+        alert('Ошибка гостевого входа: ' + error.message);
       }
     }
 
