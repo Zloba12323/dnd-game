@@ -60,10 +60,10 @@
       
       try {
         // Получаем текущего пользователя
-        const { data: { user }, error: userError } = await sb.auth.getUser();
+        const { data: { session } } = await sb.auth.getSession();
+        const user = session?.user;
         
-        if (userError || !user) {
-          console.error('Ошибка получения пользователя:', userError);
+        if (!user) {
           alert('Пожалуйста, войдите в систему');
           window.location.href = '/gamemenu';
           return;

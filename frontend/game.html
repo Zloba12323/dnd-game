@@ -168,8 +168,8 @@
     // Загрузка данных при старте
     document.addEventListener('DOMContentLoaded', async () => {
       // Проверяем авторизацию
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session?.user) {
         alert('Пожалуйста, войдите в систему');
         window.location.href = '/gamemenu';
         return;
