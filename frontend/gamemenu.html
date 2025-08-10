@@ -11,7 +11,7 @@
     // Глобальная инициализация Supabase
     const supabaseUrl = 'https://xjimqtbzbxqmkgavizxy.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqaW1xdGJ6YnhxbWtnYXZpenh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1ODMzNDQsImV4cCI6MjA3MDE1OTM0NH0.QeZIjiYR1HcUzvAqUOnjXbFCMyxY9P6SbzQKWQm-ueI';
-    let supabase;
+    let sb;
   </script>
 
   <style>
@@ -144,18 +144,18 @@
   <script>
     // Инициализация Supabase при загрузке
     document.addEventListener('DOMContentLoaded', async () => {
-      supabase = supabase.createClient(supabaseUrl, supabaseKey);
+      sb = window.supabase.createClient(supabaseUrl, supabaseKey);
       await initAuth();
     });
 
     async function initAuth() {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { data: { user }, error } = await sb.auth.getUser();
         if (error) throw error;
         
         updateAuthUI(user);
         
-        supabase.auth.onAuthStateChange((event, session) => {
+        sb.auth.onAuthStateChange((event, session) => {
           updateAuthUI(session?.user || null);
         });
       } catch (error) {
@@ -172,7 +172,7 @@
       
       if (protectedPages.includes(page)) {
         try {
-          const { data: { user }, error } = await supabase.auth.getUser();
+          const { data: { user }, error } = await sb.auth.getUser();
           if (error) throw error;
           if (!user) {
             alert('Для доступа к этой странице необходимо войти в систему');
@@ -206,7 +206,7 @@
 
     async function login(provider) {
       try {
-        const { error } = await supabase.auth.signInWithOAuth({
+        const { error } = await sb.auth.signInWithOAuth({
           provider,
           options: { redirectTo: window.location.origin }
         });
@@ -219,7 +219,7 @@
 
     async function logout() {
       try {
-        const { error } = await supabase.auth.signOut();
+        const { error } = await sb.auth.signOut();
         if (error) throw error;
         updateAuthUI(null);
       } catch (error) {

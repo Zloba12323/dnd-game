@@ -6,7 +6,7 @@
   <script>
     const supabaseUrl = 'https://xjimqtbzbxqmkgavizxy.supabase.co'
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqaW1xdGJ6YnhxbWtnYXZpenh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1ODMzNDQsImV4cCI6MjA3MDE1OTM0NH0.QeZIjiYR1HcUzvAqUOnjXbFCMyxY9P6SbzQKWQm-ueI'
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey)
+    const sb = window.supabase.createClient(supabaseUrl, supabaseKey)
   </script>
 
   <style>
@@ -140,13 +140,21 @@
       btn.textContent = 'Сохранение...';
 
       try {
-        const { data, error } = await supabase
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) {
+          alert('Пожалуйста, войдите в систему');
+          window.location.href = '/gamemenu';
+          return;
+        }
+
+        const { data, error } = await sb
           .from('sessions')
           .insert([{
             name: sessionName,
             genre: genre,
             story: story,
-            status: 'active'
+            status: 'active',
+            created_by: user.id
           }])
           .select();
 
@@ -155,7 +163,7 @@
         // Сохраняем ID сессии для последующего использования
         localStorage.setItem('currentSessionId', data[0].id);
         alert('Сессия успешно создана!');
-        window.location.href = "create-character.html";
+        window.location.href = "/create-character";
       } catch (error) {
         console.error('Ошибка сохранения:', error);
         alert('Ошибка при создании сессии: ' + error.message);

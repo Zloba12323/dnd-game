@@ -13,7 +13,7 @@ const rootDir = path.join(__dirname, '..'); // Корень проекта (dnd-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(rootDir, 'frontend')));
-app.use('/socket.io', express.static(path.join(__dirname, 'node_modules/socket.io/client-dist')));
+app.use('/socket.io', express.static(path.join(rootDir, 'node_modules', 'socket.io', 'client-dist')));
 
 // Список страниц (БЕЗ пустого элемента '' - index.html больше нет)
 const pages = [
