@@ -140,9 +140,15 @@
       btn.textContent = 'Сохранение...';
 
       try {
+        const isGuest = localStorage.getItem('guestMode') === 'true';
         const { data: { session } } = await sb.auth.getSession();
         const user = session?.user;
-        if (!user) {
+        if (!user && isGuest) {
+          alert('Создание сессий недоступно в гостевом режиме. Войдите через Google.');
+          window.location.href = '/gamemenu';
+          return;
+        }
+        if (!user && !isGuest) {
           alert('Пожалуйста, войдите в систему');
           window.location.href = '/gamemenu';
           return;
@@ -150,7 +156,7 @@
 
         const { data, error } = await sb
           .from('sessions')
-          .insert([{
+          .insert([{ 
             name: sessionName,
             genre: genre,
             story: story,

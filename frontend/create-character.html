@@ -191,6 +191,14 @@
                 return;
             }
 
+            // Гостевой режим не позволяет сохранять в базу
+            const isGuest = localStorage.getItem('guestMode') === 'true';
+            if (isGuest) {
+                alert('Сохранение персонажа недоступно в гостевом режиме. Войдите через Google.');
+                window.location.href = '/gamemenu';
+                return;
+            }
+
             // Сохранение в Supabase
             const { error } = await sb
                 .from('characters')

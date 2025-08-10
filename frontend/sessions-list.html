@@ -60,10 +60,15 @@
       
       try {
         // Получаем текущего пользователя
+        const isGuest = localStorage.getItem('guestMode') === 'true';
         const { data: { session } } = await sb.auth.getSession();
         const user = session?.user;
         
-        if (!user) {
+        if (!user && isGuest) {
+          container.innerHTML += '<p>Вы в гостевом режиме. Список сессий из базы недоступен. Вы можете присоединиться к комнате по ID в разделе Игры.</p>';
+          return;
+        }
+        if (!user && !isGuest) {
           alert('Пожалуйста, войдите в систему');
           window.location.href = '/gamemenu';
           return;

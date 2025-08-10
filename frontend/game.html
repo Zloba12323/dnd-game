@@ -168,8 +168,9 @@
     // Загрузка данных при старте
     document.addEventListener('DOMContentLoaded', async () => {
       // Проверяем авторизацию
+      const isGuest = localStorage.getItem('guestMode') === 'true';
       const { data: { session } } = await sb.auth.getSession();
-      if (!session?.user) {
+      if (!session?.user && !isGuest) {
         alert('Пожалуйста, войдите в систему');
         window.location.href = '/gamemenu';
         return;

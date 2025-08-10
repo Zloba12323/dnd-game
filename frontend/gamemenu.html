@@ -151,11 +151,18 @@
 
     async function initAuth() {
       try {
+        const isGuest = localStorage.getItem('guestMode') === 'true';
+        if (isGuest) {
+          updateAuthUI({ isGuest: true });
+          return;
+        }
+
         const { data: { session } } = await sb.auth.getSession();
         updateAuthUI(session?.user || null);
 
         sb.auth.onAuthStateChange((_event, session) => {
-          updateAuthUI(session?.user || null);
+          const guest = localStorage.getItem('guestMode') === 'true';
+          updateAuthUI(guest ? { isGuest: true } : (session?.user || null));
         });
       } catch (error) {
         console.error('Auth init error:', error);
@@ -168,7 +175,8 @@
       
       if (protectedPages.includes(page)) {
         const { data: { session } } = await sb.auth.getSession();
-        if (!session?.user) {
+        const isGuest = localStorage.getItem('guestMode') === 'true';
+        if (!session?.user && !isGuest) {
           alert('Для доступа к этой странице необходимо войти в систему');
           return;
         }
@@ -182,7 +190,7 @@
       const guestBtn = document.getElementById('guest-login-btn');
       if (user) {
         userInfoDiv.innerHTML = `
-          <p>Вы вошли как <strong>${user.email || (user.is_anonymous ? 'Гость' : 'Пользователь')}</strong></p>
+          <p>Вы вошли как <strong>${user.email || ((user.is_anonymous || user.isGuest) ? 'Гость' : 'Пользователь')}</strong></p>
           <button class="auth-btn" onclick="logout()">Выйти</button>
         `;
         if (guestBtn) guestBtn.style.display = 'none';
@@ -210,19 +218,16 @@
     }
 
     async function loginGuest() {
-      try {
-        const { data, error } = await sb.auth.signInAnonymously();
-        if (error) throw error;
-      } catch (error) {
-        console.error('Guest login error:', error);
-        alert('Ошибка гостевого входа: ' + error.message);
-      }
+      // Включаем локальный гостевой режим без Supabase
+      localStorage.setItem('guestMode', 'true');
+      updateAuthUI({ isGuest: true });
     }
 
     async function logout() {
       try {
+        localStorage.removeItem('guestMode');
         const { error } = await sb.auth.signOut();
-        if (error) throw error;
+        if (error) console.warn('Supabase signOut warning:', error.message);
         updateAuthUI(null);
       } catch (error) {
         console.error('Logout error:', error);
