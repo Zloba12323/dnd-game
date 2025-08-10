@@ -140,7 +140,8 @@
       btn.textContent = 'Сохранение...';
 
       try {
-        const { data: { user } } = await sb.auth.getUser();
+        const { data: { session } } = await sb.auth.getSession();
+        const user = session?.user;
         if (!user) {
           alert('Пожалуйста, войдите в систему');
           window.location.href = '/gamemenu';

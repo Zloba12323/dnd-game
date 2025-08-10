@@ -144,26 +144,21 @@
   <script>
     // Инициализация Supabase при загрузке
     document.addEventListener('DOMContentLoaded', async () => {
-      sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+      sb = window.supabase.createClient(supabaseUrl, supabaseKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
       await initAuth();
     });
 
     async function initAuth() {
       try {
-        const { data: { user }, error } = await sb.auth.getUser();
-        if (error) throw error;
-        
-        updateAuthUI(user);
-        
-        sb.auth.onAuthStateChange((event, session) => {
+        const { data: { session } } = await sb.auth.getSession();
+        updateAuthUI(session?.user || null);
+
+        sb.auth.onAuthStateChange((_event, session) => {
           updateAuthUI(session?.user || null);
         });
       } catch (error) {
         console.error('Auth init error:', error);
-        document.getElementById('user-info').innerHTML = `
-          <p style="color: red">Ошибка подключения</p>
-          <button class="auth-btn" onclick="location.reload()">Перезагрузить</button>
-        `;
+        updateAuthUI(null);
       }
     }
 
@@ -171,16 +166,9 @@
       const protectedPages = ['create-session', 'create-character', 'sessions-list'];
       
       if (protectedPages.includes(page)) {
-        try {
-          const { data: { user }, error } = await sb.auth.getUser();
-          if (error) throw error;
-          if (!user) {
-            alert('Для доступа к этой странице необходимо войти в систему');
-            return;
-          }
-        } catch (error) {
-          console.error('Auth check error:', error);
-          alert('Ошибка проверки авторизации');
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session?.user) {
+          alert('Для доступа к этой странице необходимо войти в систему');
           return;
         }
       }
