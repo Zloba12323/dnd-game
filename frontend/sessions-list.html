@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Мои сессии D&D</title>
+  <style>
+    .session-card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+    .session-card h3 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+    .session-card button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .session-card button:hover {
+      background-color: #45a049;
+    }
+    .new-session-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .new-session-btn:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div id="sessions-container" style="max-width: 600px; margin: 30px auto;">
+    <h2>Мои сессии</h2>
+    <button class="new-session-btn" onclick="window.location.href='create-session.html'">Создать новую сессию</button>
+    <!-- Сюда будут добавляться сессии -->
+  </div>
+
+  <!-- Подключаем Supabase JS клиент -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    // Инициализация Supabase
+    const supabaseUrl = 'https://xjimqtbzbxqmkgavizxy.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqaW1xdGJ6YnhxbWtnYXZpenh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1ODMzNDQsImV4cCI6MjA3MDE1OTM0NH0.QeZIjiYR1HcUzvAqUOnjXbFCMyxY9P6SbzQKWQm-ueI';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('sessions-container');
+      
+      try {
+        // Получаем текущего пользователя
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+          console.error('Ошибка получения пользователя:', userError);
+          alert('Пожалуйста, войдите в систему');
+          window.location.href = 'index.html';
+          return;
+        }
+
+        // Загружаем сессии текущего пользователя из Supabase
+        const { data: sessions, error } = await supabase
+          .from('sessions')
+          .select('*')
+          .eq('created_by', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        if (sessions.length === 0) {
+          container.innerHTML += '<p>У вас пока нет созданных сессий. Создайте первую!</p>';
+          return;
+        }
+
+        // Отображаем сессии
+        sessions.forEach(session => {
+          const card = document.createElement('div');
+          card.className = 'session-card';
+          card.innerHTML = `
+            <h3>${session.name}</h3>
+            <p><strong>Жанр:</strong> ${getGenreName(session.genre)}</p>
+            <p><small>Создана: ${new Date(session.created_at).toLocaleDateString()}</small></p>
+            <button onclick="startSession('${session.id}')">Играть</button>
+          `;
+          container.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error('Ошибка загрузки сессий:', error);
+        container.innerHTML = '<p>Произошла ошибка при загрузке сессий. Пожалуйста, попробуйте позже.</p>';
+      }
+    });
+
+    function startSession(id) {
+      window.location.href = `character-select.html?session=${id}`;
+    }
+
+    function getGenreName(genreKey) {
+      const genres = {
+        'fantasy': 'Фэнтези',
+        'horror': 'Ужасы',
+        'romance': 'Романтика'
+      };
+      return genres[genreKey] || genreKey;
+    }
+  </script>
+</body>
+</html>
